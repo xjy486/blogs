@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  
+  
+  
+  <entry>
+    <title>如何在 Hexo 博客中插入图片</title>
+    <link href="/blogs/2026/05/24/hexo-fluid-guide/"/>
+    <url>/blogs/2026/05/24/hexo-fluid-guide/</url>
+    
+    <content type="html"><![CDATA[<h2 id="欢迎使用-Hexo-Fluid"><a href="#欢迎使用-Hexo-Fluid" class="headerlink" title="欢迎使用 Hexo + Fluid"></a>欢迎使用 Hexo + Fluid</h2><p>这是一篇示例文章，演示如何在博客中插入图片。</p><h3 id="图片插入方法"><a href="#图片插入方法" class="headerlink" title="图片插入方法"></a>图片插入方法</h3><p>由于开启了 <code>post_asset_folder</code>，每篇文章都有一个同名的资源文件夹，可以将图片放在里面。</p><h4 id="方法-1：使用-Markdown-语法（推荐）"><a href="#方法-1：使用-Markdown-语法（推荐）" class="headerlink" title="方法 1：使用 Markdown 语法（推荐）"></a>方法 1：使用 Markdown 语法（推荐）</h4><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">![<span class="hljs-string">图片描述</span>](<span class="hljs-link">hexo-logo.png</span>)<br></code></pre></td></tr></table></figure><h4 id="方法-2：使用-Hexo-标签"><a href="#方法-2：使用-Hexo-标签" class="headerlink" title="方法 2：使用 Hexo 标签"></a>方法 2：使用 Hexo 标签</h4><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">&#123;% asset<span class="hljs-emphasis">_img hexo-logo.png 图片描述 %&#125;</span><br></code></pre></td></tr></table></figure><h4 id="方法-3：使用绝对路径"><a href="#方法-3：使用绝对路径" class="headerlink" title="方法 3：使用绝对路径"></a>方法 3：使用绝对路径</h4><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">![<span class="hljs-string">图片描述</span>](<span class="hljs-link">/blogs/hexo-fluid-guide/hexo-logo.png</span>)<br></code></pre></td></tr></table></figure><h3 id="示例图片"><a href="#示例图片" class="headerlink" title="示例图片"></a>示例图片</h3><p>下面是一张示例图片：</p><p><img src="/blogs/2026/05/24/hexo-fluid-guide/hexo-logo.png" alt="Hexo Logo"></p><blockquote><p>提示：将图片放入与文章同名的文件夹中（<code>source/_posts/hexo-fluid-guide/</code>），然后在文章中直接引用文件名即可。</p></blockquote><h3 id="图片存放位置"><a href="#图片存放位置" class="headerlink" title="图片存放位置"></a>图片存放位置</h3><figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs nix">source<span class="hljs-symbol">/</span><br>  _posts<span class="hljs-symbol">/</span><br>    hexo-fluid-guide.md       <span class="hljs-comment"># 文章文件</span><br>    hexo-fluid-guide<span class="hljs-symbol">/</span>         <span class="hljs-comment"># 资源文件夹（自动生成）</span><br>      hexo-logo.png           <span class="hljs-comment"># 文章配图</span><br></code></pre></td></tr></table></figure><h3 id="新建带图片的文章步骤"><a href="#新建带图片的文章步骤" class="headerlink" title="新建带图片的文章步骤"></a>新建带图片的文章步骤</h3><ol><li>执行 <code>hexo new post &quot;文章标题&quot;</code>，会自动创建 <code>.md</code> 文件和同名文件夹</li><li>将图片放入同名文件夹中</li><li>在文章中用 <code>![描述](图片文件名)</code> 引用</li><li>执行 <code>hexo generate</code> 或 <code>hexo server</code> 查看效果</li></ol><p>祝 blogging 愉快！</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>博客搭建</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Hexo</tag>
+      
+      <tag>Fluid</tag>
+      
+      <tag>教程</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  
+</search>
