@@ -13,7 +13,7 @@ timezone: ''
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
-url: https://xujy.github.io/blogs
+url: https://xjy486.github.io/blogs
 root: /blogs/
 permalink: :year/:month/:day/:title/
 permalink_defaults:
@@ -105,7 +105,4 @@ theme: fluid
 
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
-deploy:
-  type: git
-  repo: https://github.com/xujy/blogs.git
-  branch: gh-pages
+## 使用 GitHub Actions 自动部署，无需手动配置 deploy
