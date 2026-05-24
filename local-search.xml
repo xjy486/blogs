@@ -4,6 +4,35 @@
   
   
   <entry>
+    <title>如何编写和推送博客</title>
+    <link href="/blogs/2026/05/24/how-to-write-and-publish-blog/"/>
+    <url>/blogs/2026/05/24/how-to-write-and-publish-blog/</url>
+    
+    <content type="html"><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本博客基于 Hexo + Fluid 主题搭建，使用 GitHub Actions 自动部署到 GitHub Pages。本文介绍日常编写和发布博客的完整流程。</p><span id="more"></span><h2 id="目录结构"><a href="#目录结构" class="headerlink" title="目录结构"></a>目录结构</h2><figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs nix">myblog<span class="hljs-symbol">/</span><br>├── source<span class="hljs-symbol">/</span><br>│   └── _posts<span class="hljs-symbol">/</span>          <span class="hljs-comment"># 文章存放目录</span><br>├── themes<span class="hljs-symbol">/</span>              <span class="hljs-comment"># 主题目录</span><br>├── _config.yml          <span class="hljs-comment"># 站点配置</span><br>└── .github<span class="hljs-operator">/</span>workflows<span class="hljs-symbol">/</span>   <span class="hljs-comment"># 自动部署配置</span><br></code></pre></td></tr></table></figure><h2 id="编写文章"><a href="#编写文章" class="headerlink" title="编写文章"></a>编写文章</h2><h3 id="创建新文章"><a href="#创建新文章" class="headerlink" title="创建新文章"></a>创建新文章</h3><p>进入博客目录，使用 Hexo 命令创建：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cd</span> myblog<br>npx hexo new <span class="hljs-string">&quot;文章标题&quot;</span><br></code></pre></td></tr></table></figure><p>执行后会在 <code>source/_posts/</code> 下生成 <code>文章标题.md</code> 文件，带有默认的 front-matter 头部：</p><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-meta">---</span><br><span class="hljs-attr">title:</span> <span class="hljs-string">文章标题</span><br><span class="hljs-attr">date:</span> <span class="hljs-number">2026-05-24 12:00:00</span><br><span class="hljs-attr">tags:</span><br><span class="hljs-meta">---</span><br></code></pre></td></tr></table></figure><h3 id="Front-matter-说明"><a href="#Front-matter-说明" class="headerlink" title="Front-matter 说明"></a>Front-matter 说明</h3><table><thead><tr><th>字段</th><th>说明</th></tr></thead><tbody><tr><td><code>title</code></td><td>文章标题</td></tr><tr><td><code>date</code></td><td>发布日期</td></tr><tr><td><code>categories</code></td><td>分类（只能有一个）</td></tr><tr><td><code>tags</code></td><td>标签（可多个）</td></tr></tbody></table><p>示例：</p><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-meta">---</span><br><span class="hljs-attr">title:</span> <span class="hljs-string">如何编写和推送博客</span><br><span class="hljs-attr">date:</span> <span class="hljs-number">2026-05-24 14:00:00</span><br><span class="hljs-attr">categories:</span> <span class="hljs-string">博客搭建</span><br><span class="hljs-attr">tags:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">Hexo</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">Fluid</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">教程</span><br><span class="hljs-meta">---</span><br></code></pre></td></tr></table></figure><h3 id="插入摘要"><a href="#插入摘要" class="headerlink" title="插入摘要"></a>插入摘要</h3><p>在文章中插入 <code>&lt;!-- more --&gt;</code>，其前的内容会显示在首页作为摘要，之后的部分需要点击”阅读全文”查看。</p><h3 id="本地预览"><a href="#本地预览" class="headerlink" title="本地预览"></a>本地预览</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">npm run server<br></code></pre></td></tr></table></figure><p>访问 <a href="http://localhost:4000/blogs/">http://localhost:4000/blogs/</a> 预览效果。</p><h2 id="标签和分类"><a href="#标签和分类" class="headerlink" title="标签和分类"></a>标签和分类</h2><p>Hexo 的标签和分类<strong>无需手动创建页面</strong>，只需在文章的 front-matter 中声明即可：</p><ul><li><strong>分类</strong>：<code>categories: 博客搭建</code></li><li><strong>标签</strong>：<code>tags: [Hexo, Fluid]</code></li></ul><p>Hexo 构建时会自动生成对应的分类页和标签页。</p><h2 id="发布文章"><a href="#发布文章" class="headerlink" title="发布文章"></a>发布文章</h2><h3 id="提交到-GitHub"><a href="#提交到-GitHub" class="headerlink" title="提交到 GitHub"></a>提交到 GitHub</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">git add .<br>git commit -m <span class="hljs-string">&quot;add: 文章标题&quot;</span><br>git push origin main<br></code></pre></td></tr></table></figure><h3 id="自动部署"><a href="#自动部署" class="headerlink" title="自动部署"></a>自动部署</h3><p>代码推送到 <code>main</code> 分支后，GitHub Actions 会自动执行以下操作：</p><ol><li>检出代码</li><li>安装依赖</li><li>执行 <code>hexo generate</code> 生成静态页面</li><li>推送到 <code>gh-pages</code> 分支</li><li>GitHub Pages 从 <code>gh-pages</code> 分支部署上线</li></ol><p>整个过程约 1 分钟，完成后刷新博客地址即可看到新文章。</p><h2 id="常用命令速查"><a href="#常用命令速查" class="headerlink" title="常用命令速查"></a>常用命令速查</h2><table><thead><tr><th>命令</th><th>作用</th></tr></thead><tbody><tr><td><code>npx hexo new &quot;标题&quot;</code></td><td>创建新文章</td></tr><tr><td><code>npm run server</code></td><td>本地预览</td></tr><tr><td><code>npm run build</code></td><td>生成静态文件</td></tr><tr><td><code>npm run clean</code></td><td>清除缓存</td></tr></tbody></table><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>日常发博客就三步：</p><ol><li><strong><code>npx hexo new &quot;标题&quot;</code></strong> 创建文章</li><li>在 <code>source/_posts/</code> 下编辑 Markdown</li><li><strong><code>git push</code></strong> 到 main 分支，等 Actions 自动部署</li></ol><p>无需手动运行 <code>hexo generate</code> 或 <code>hexo deploy</code>，CI&#x2F;CD 流水线已全部接管。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>博客搭建</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Hexo</tag>
+      
+      <tag>Fluid</tag>
+      
+      <tag>教程</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>如何在 Hexo 博客中插入图片</title>
     <link href="/blogs/2026/05/24/hexo-fluid-guide/"/>
     <url>/blogs/2026/05/24/hexo-fluid-guide/</url>
