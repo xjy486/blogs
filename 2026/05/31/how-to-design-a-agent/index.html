@@ -1,0 +1,888 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/blogs/img/fluid.png">
+  <link rel="icon" href="/blogs/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="xujy">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="让 Agent 知道自己在哪里：从一次失败的 Vibe Coding 谈起读完那篇关于 Harness 与 Runtime 的文章后，我对智能体系统设计有了一些新的理解。它让我意识到，Agent 真正困难的地方，或许并不只是“模型够不够聪明”，而是当任务被拉长、步骤变多、上下文不断膨胀时，系统是否还能清楚地知道：自己现在在哪里，正在做什么，下一步应该往哪里去。 这也让我想起了自己最近一次并不成功的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何设计一个智能体系统">
+<meta property="og:url" content="https://xjy486.github.io/blogs/2026/05/31/how-to-design-a-agent/index.html">
+<meta property="og:site_name" content="我的博客">
+<meta property="og:description" content="让 Agent 知道自己在哪里：从一次失败的 Vibe Coding 谈起读完那篇关于 Harness 与 Runtime 的文章后，我对智能体系统设计有了一些新的理解。它让我意识到，Agent 真正困难的地方，或许并不只是“模型够不够聪明”，而是当任务被拉长、步骤变多、上下文不断膨胀时，系统是否还能清楚地知道：自己现在在哪里，正在做什么，下一步应该往哪里去。 这也让我想起了自己最近一次并不成功的">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-05-31T10:00:00.000Z">
+<meta property="article:modified_time" content="2026-05-31T02:39:52.773Z">
+<meta property="article:author" content="xujy">
+<meta property="article:tag" content="Agent">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>如何设计一个智能体系统 - 我的博客</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/blogs/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/blogs/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/blogs/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"xjy486.github.io","root":"/blogs/","version":"1.9.9","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/blogs/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/blogs/js/utils.js" ></script>
+  <script  src="/blogs/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/blogs/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/blogs/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/blogs/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/blogs/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/blogs/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/blogs/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/blogs/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/blogs/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/blogs/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/blogs/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/blogs/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/blogs/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="如何设计一个智能体系统"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-05-31 10:00" pubdate>
+          2026年5月31日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          51 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">如何设计一个智能体系统</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="让-Agent-知道自己在哪里：从一次失败的-Vibe-Coding-谈起"><a href="#让-Agent-知道自己在哪里：从一次失败的-Vibe-Coding-谈起" class="headerlink" title="让 Agent 知道自己在哪里：从一次失败的 Vibe Coding 谈起"></a>让 Agent 知道自己在哪里：从一次失败的 Vibe Coding 谈起</h1><p>读完那篇关于 Harness 与 Runtime 的文章后，我对智能体系统设计有了一些新的理解。它让我意识到，Agent 真正困难的地方，或许并不只是“模型够不够聪明”，而是当任务被拉长、步骤变多、上下文不断膨胀时，系统是否还能清楚地知道：<strong>自己现在在哪里，正在做什么，下一步应该往哪里去。</strong></p>
+<p>这也让我想起了自己最近一次并不成功的 AI Coding 经历。</p>
+<p>那次经历并不愉快。它像一场看似自动推进的开发实验，起初充满想象，过程不断消耗资源，最后却只留下了一堆看似完整、实则无法贯通的代码残片。更让我挫败的是，我并不是完全不会使用 AI Coding。我可以用它完成一些局部功能、修复一些具体问题，但当我试图让它帮我完成一个更复杂的项目时，整个过程却很快失控了。</p>
+<p>这篇文章，算是我对那次失败的一次复盘。</p>
+<h2 id="一、Harness-之后，真正的问题是-Runtime"><a href="#一、Harness-之后，真正的问题是-Runtime" class="headerlink" title="一、Harness 之后，真正的问题是 Runtime"></a>一、Harness 之后，真正的问题是 Runtime</h2><p>文章中提到，Harness 解决的是一个相对静态的问题：Agent 的外围系统由哪些组件构成？它关心工具、记忆、上下文、权限、日志、回调等能力如何被组织起来，让模型不再只是一个孤立的文本生成器，而是能够调用外部世界、完成复杂任务的系统。</p>
+<p>但 Harness 并不是终点。</p>
+<p>更进一步的问题是：当这些组件都存在之后，系统如何利用它们，共同维护一个长期稳定、可审计、可回滚、可恢复的运行状态？</p>
+<p>这就是 Runtime 的意义。</p>
+<p>Runtime 并不是简单地给 Agent 加一块 Memory，也不是把历史会话粗暴地塞进上下文窗口。它更像是把 Agent 的每一步执行都建模为一次可验证的状态转移：系统必须知道当前状态是什么，哪些动作只是候选，哪些动作已经提交，哪些状态可以回滚，哪些失败需要隔离，哪些决策必须交给人类确认。</p>
+<p>这个设计思路让我联想到分布式系统中的状态机复制和事务处理。Agent 的每一步执行，都像是一次小型事务：它不能只是“看起来做了点什么”，而应该尽量满足原子性、一致性、隔离性和持久性。否则，系统就会在长程任务中不断积累不可见的偏差，直到某一刻突然崩塌。</p>
+<p>可是，问题也随之出现了。</p>
+<p>如果一切都被建模成状态转移，Agent 系统会不会变成一个死板的 workflow？它会不会失去智能体本应具备的开放性、灵活性和临场反应能力？ReAct 这类范式的价值，会不会被流程图式的控制逻辑所消解？</p>
+<p>后来我意识到，Runtime 的状态转移并不是要把 Agent 关进一个僵硬的流程里，而是要给它一条可以被追踪的轨道。它不是取消智能体的探索能力，而是让探索不至于变成漂流；不是要求每一步都预先写死，而是要求每一步都能被记录、验证、回滚和解释。</p>
+<p>换句话说，Runtime 不是给 Agent 戴上镣铐，而是给它一张地图。</p>
+<h2 id="二、最可怕的不是答错，而是不知道自己在哪里"><a href="#二、最可怕的不是答错，而是不知道自己在哪里" class="headerlink" title="二、最可怕的不是答错，而是不知道自己在哪里"></a>二、最可怕的不是答错，而是不知道自己在哪里</h2><p>文章里有一句话让我印象很深：在长程 Agent 中，真正的核心是高频的状态转移。最可怕的不是模型输出了错误答案，而是系统根本不知道当前处于什么状态。</p>
+<p>这句话击中了我。</p>
+<p>因为我最近那个失败的项目，本质上就是一个“状态失明”的过程。</p>
+<p>一开始，我对项目本身并没有想得很清楚。我只大概知道输入是什么，输出是什么，却没有真正定义清楚功能边界、数据流向、核心模块、验收标准，以及什么样的结果才算“项目真的跑通”。</p>
+<p>于是，我先让 Codex 帮我设计了一版开发方案。那份方案从外观上看还不错，结构完整，术语丰富，模块划分也像模像样。于是我简单扫了一眼，就把它交给 Claude Code 去实现。</p>
+<p>Claude Code 实现完之后，我再让 Codex 对照原始设计方案评审代码，看实现是否符合设计要求。Codex 给出评审意见后，我再把这些意见交给 Claude Code 修改。如此循环往复。</p>
+<p>理论上，这像是一套很美妙的协作机制：一个模型负责实现，一个模型负责评审；一个模型动手，一个模型挑错。只要不断迭代，项目似乎就应该越来越接近完美。</p>
+<p>但现实并不是这样。</p>
+<p>随着交替循环的进行，问题逐渐暴露出来。先是 Codex 到达了使用限额，接着是 DeepSeek 的调用成本开始让我肉疼。更重要的是，项目的宏观目标开始被悄悄偏移。Codex 的评审意见越来越细，越来越局部，甚至开始纠缠一些并不影响主线的小问题。</p>
+<p>而最糟糕的是，我没有一个清晰的标准去判断：哪些意见是关键问题，哪些只是噪声；哪些修改会让项目更接近目标，哪些修改只是在消耗上下文和精力。</p>
+<p>这并不是因为项目已经没有大方向的问题。恰恰相反，那个项目甚至连一条完整的流水线都跑不通。但模型仍然在认真地讨论一些局部细节，仿佛只要把这些边角磨平，整个系统就会自然成立。</p>
+<p>那一刻我才意识到：模型并不知道我的项目真正处于什么状态。</p>
+<p>它不知道当前最重要的问题是“先跑通主链路”，而不是“继续优化局部实现”；它不知道哪些模块是核心路径，哪些只是装饰；它更不知道，当一个项目连最小闭环都没有建立时，任何精致的局部优化都可能只是空中楼阁。</p>
+<h2 id="三、我失败的不是使用模型，而是没有管理状态"><a href="#三、我失败的不是使用模型，而是没有管理状态" class="headerlink" title="三、我失败的不是使用模型，而是没有管理状态"></a>三、我失败的不是使用模型，而是没有管理状态</h2><p>这次失败让我很挫败。</p>
+<p>我一度很羡慕那些能够独立使用 AI Coding 完成复杂项目的人。他们似乎可以把一个模糊的想法交给模型，然后一路推进，最终得到一个能运行、能迭代、甚至能上线的系统。而我虽然可以借助 AI 完成一些小功能，却很难驾驭一个完整项目的开发过程。</p>
+<p>后来想想，这并不只是“我还不够会用 AI”的问题。</p>
+<p>更深层的问题是，我对那个陌生项目的需求理解不够深。我没有先想清楚自己究竟想要什么，也没有定义清楚什么方案更合适、什么结果可接受、什么路径应该优先验证。</p>
+<p>在这种情况下，把任务交给模型，就像把一艘船交给一个很会划桨的人，却没有告诉它目的地在哪里。它会很努力，也会不断前进，但前进本身并不等于接近目标。</p>
+<p>我真正缺少的，是一套状态管理意识。</p>
+<p>如果我在项目开始前，先把全局状态定义清楚：当前项目处于需求澄清、架构设计、最小闭环、模块实现、集成测试，还是优化打磨阶段；每个阶段的输入是什么，输出是什么，验收标准是什么；哪些问题属于当前阶段，哪些问题应该暂时搁置，那么模型的每一次执行就不会只是“生成一些代码”，而是一次可以被检查的状态推进。</p>
+<p>如果我把项目拆成更小的模块，并为每个模块定义清晰的输入、输出和验收标准，那么我就可以一次只验证一个局部，而不是让整个系统在混乱的上下文中互相牵连。</p>
+<p>如果我在 Codex 和 Claude Code 交替迭代时，始终维护一份全局任务状态表，那么当它们开始陷入某个牛角尖时，我就能及时打断：现在不是讨论这个细节的时候，我们当前的主线任务是跑通流水线。</p>
+<p>可惜，当时的我没有这样做。</p>
+<p>于是，评审意见越来越细，修改范围越来越散，上下文越来越脏，而项目的主线却越来越模糊。最后，我得到的不是一个完成的系统，而是一堆被反复修改过、却没有被真正组织起来的代码。</p>
+<h2 id="四、复杂项目不能依赖“一口气生成”"><a href="#四、复杂项目不能依赖“一口气生成”" class="headerlink" title="四、复杂项目不能依赖“一口气生成”"></a>四、复杂项目不能依赖“一口气生成”</h2><p>这次经历给我最大的教训是：不要迷信模型的一次性能力。</p>
+<p>AI Coding 很强，但它并不会自动替你完成需求澄清、系统拆解、状态管理和验收判断。模型可以帮你写代码、改代码、解释代码、评审代码，但它很难在你自己都没想清楚的时候，替你稳定地维护整个项目的方向。</p>
+<p>复杂项目不能依赖“一口气生成”。</p>
+<p>更可靠的方式，是把开发过程拆成一个个可验证的状态转移：</p>
+<p>先定义最小可运行闭环，再实现核心链路；<br>先跑通数据流，再追求工程优雅；<br>先验证模块输入输出，再讨论局部优化；<br>先建立验收标准，再让模型自由发挥。</p>
+<p>每个模块都应该有清晰的边界：输入是什么，输出是什么，依赖什么，失败时如何定位，完成时如何验收。否则，模型生成的代码越多，系统反而越难理解；上下文积累得越厚，方向反而越容易丢失。</p>
+<p>同时，修复局部问题的上下文也不能无限污染全局上下文。一个小 bug 的修复过程，可能会引入大量临时判断、局部妥协和细节讨论。如果这些内容不断沉积在主上下文中，模型就会逐渐被带偏，开始把局部噪声误认为全局目标。</p>
+<p>因此，AI Coding 不是让模型替我从混沌中变出秩序，而是要求我先建立基本秩序，再让模型在秩序中加速。</p>
+<h2 id="五、给自己的几条开发准则"><a href="#五、给自己的几条开发准则" class="headerlink" title="五、给自己的几条开发准则"></a>五、给自己的几条开发准则</h2><p>如果下次再做类似项目，我希望自己至少遵守几条原则。</p>
+<p>第一，先写清楚项目的最小闭环。不要一开始就追求完整系统，而是先定义一条最短路径：输入如何进入系统，经过哪些核心处理，最后如何产生一个可以被验证的输出。</p>
+<p>第二，每个模块都必须有明确的输入、输出和验收标准。没有验收标准的模块，等于没有完成定义；没有完成定义的任务，交给模型只会制造更多不确定性。</p>
+<p>第三，评审意见必须分级。不是所有问题都值得立刻修。先区分主链路阻塞、功能缺陷、工程优化和风格问题。项目没跑通时，不要沉迷代码洁癖。</p>
+<p>第四，保持一份全局状态文档。它不需要很复杂，但必须记录当前阶段、当前目标、已完成事项、阻塞问题和下一步动作。每次让模型继续工作前，都要让它重新对齐这份状态。</p>
+<p>第五，及时隔离局部上下文。修一个小 bug，就在小范围内修；讨论一个局部模块，就不要让它污染全局设计。必要时开启新的上下文，只带入最小必要信息。</p>
+<p>第六，人在回路中不能只是复制粘贴。人真正要做的，不是机械地把 Codex 的意见转交给 Claude Code，而是判断这些意见是否服务于当前阶段目标。AI 可以负责生成和执行，但方向感必须由人来维护。</p>
+<h2 id="结语：不要让-Agent-独自漂流"><a href="#结语：不要让-Agent-独自漂流" class="headerlink" title="结语：不要让 Agent 独自漂流"></a>结语：不要让 Agent 独自漂流</h2><p>读完那篇文章后，我对 Runtime 的理解更具体了一些。</p>
+<p>它并不是一个抽象的架构概念，也不是工程师为了显得严谨而发明的新名词。它真正关心的是：当 Agent 执行一个长程任务时，系统如何避免迷路。</p>
+<p>而我那次失败的 Vibe Coding 经历，恰恰说明了迷路是如何发生的。</p>
+<p>它不是突然发生的。它是在一次次看似合理的修改中发生的，是在一次次局部评审中发生的，是在上下文不断累积、目标不断模糊、状态无人维护的过程中发生的。</p>
+<p>所以，AI Coding 带给我的最大启发不是“模型已经可以替代程序员”，而是“程序员更需要具备系统设计和状态管理能力”。</p>
+<p>模型可以很强，但它不能替我知道自己真正想要什么。<br>模型可以走得很快，但我必须告诉它我们现在在哪里。<br>模型可以不断行动，但系统必须知道哪些行动已经提交，哪些只是尝试，哪些需要回滚，哪些应该停止。</p>
+<p>不要把希望寄托在一次完美生成上。</p>
+<p>真正可靠的方式，是让每一步都有边界，让每个模块可验证，让每次迭代都能回到全局状态中重新校准。只有这样，Agent 才不是在上下文的海面上漂流，而是在一张可追踪、可修正、可抵达的航图上前进。</p>
+<hr>
+<h1 id="原文"><a href="#原文" class="headerlink" title="原文"></a>原文</h1><p><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/MYEP6acaGhIwf-1kyXMp1A">https://mp.weixin.qq.com/s/MYEP6acaGhIwf-1kyXMp1A</a><br>在读了这篇文章后，我对智能体系统设计有了一些新的理解，并结合自己在使用Claude Code开发的经验，写一些读后感。</p>
+<h2 id="1-Harness之后，下一步是Runtime"><a href="#1-Harness之后，下一步是Runtime" class="headerlink" title="1. Harness之后，下一步是Runtime"></a>1. Harness之后，下一步是Runtime</h2><p>文章中提到，Harness解决的是静态问题：“Agent的外围系统由哪些组件构成？”，然而这并不是终点，更加值得探索的问题是，如何利用这些组件，共同维护一个长期稳定、可审计、可回滚、可恢复的运行状态？</p>
+<p>Runtime并不是给Agent简单加一个Memory，把历史会话塞进上下文，而是把Agent的每一步执行都建模为可验证的状态转移：系统必须知道当前状态是什么，哪些动作只是候选，哪些动作已提交，哪些状态可以回滚，哪些失败需要隔离或交给人类处理。</p>
+<p>上面的设计思路让我想到了分布式系统中的状态机复制（State Machine Replication）和事务处理（Transaction Processing），Agent的每一步执行都像是一个事务，必须满足ACID属性（原子性、一致性、隔离性、持久性），才能保证整个系统的健壮性和可靠性。</p>
+<p>但是这样一个逻辑严密的系统，又似乎像是一个workflow，死板而没有灵活性，如React这样的范式的优势很难发挥出来。</p>
+<p>但其实问题似乎远没有这么简单，上面所提到的Runtime状态转移，并不是要把任务划分成一个简单的workflow，而是把一个更加高层级的抽象概念——智能体系统，转换为一个可验证的状态转移序列。</p>
+<p>那么对我而言，最大的困扰来了，如何划分状态呢？如何管理状态呢？</p>
+<p>文章中提到，在一个长程Agent中，真正的核心是高频的状态转移。<strong>在执行流中，最可怕的不是模型输出了错误答案，而是系统根本不知道当前处于什么状态。</strong></p>
+<p>这个问题我是深有同感，我最近使用vibe coding开发了一个项目，这个项目本身我就并没有想的很清楚，不仅是功能边界，数据流的流向等。我只大概知道自己需要输入什么，产出什么，但是我想要的产出没有一个可以验证和评估的标准。</p>
+<p>我先是使用Codex帮我设计了一版开发方案出来，然后我简单看了一眼，从外貌协会的角度来看，这方案看上去似乎还不错，于是我直接把方案丢给模型能力相对较差的Claude Code，让它来实现。</p>
+<p>Claude Code实现完后，我再让Codex去对着设计方案去评审代码实现，看看实现是否符合设计方案的要求。每次Codex给出评审意见后，我再把评审意见丢给Claude Code，让他来根据评审意见进行修改，直到没有意见为止（理论上来说，这么一个交替进行的过程，会让我的整个项目趋于完美，但是真相并非如此）。</p>
+<p>首先，受限于Token资源，在交替进行的过程中，先是Codex到达了限额，紧接着是我的DeepSeek钱包顶不住了。不仅如此，我发现，随着交替循环的进行，最核心的宏观目标被完全偏离了，Codex给的评审意见越来越细节化，甚至是一些无关紧要的细节，而我却没有一个清晰的标准&#x2F;敏锐的洞察力来判断哪些评审意见是有价值的，哪些是无关紧要的。这并不是说我的项目已经没有了大方向的问题，我发现这个项目甚至都跑不通一个流水线，但是Codex还是在给出一些无关紧要的细节意见，越来越钻牛角尖，越来越偏离我最初的目标。</p>
+<p>这个项目的最终结果自然也是黄了，浪费了一堆资源，金钱，时间，精力，结果得到的确实一堆甚至跑不通的代码泔水。</p>
+<p>这件事情，让我感到了深深的挫败感，也羡慕哪些厉害的大神，能够独立的使用AI Coding完成一个复杂项目，我虽然有能力使用AI Coding来完成一些简单的小功能，但是实现一个完整的复杂项目的能力却依然不足，这一方面是我对AI Coding的使用还不熟练，另一方面是我对一个陌生的项目需求的理解还不够深，我没有想清楚我究竟想要什么，哪些方案可能是更加合适的。</p>
+<p>此外，就是让我联想到了今天阅读的这篇文章，要做好状态的管理与设计，如果我在项目开发的过程中，遵循模块化开发与验证的原则，那么单个我就可以聚焦于单个模块功能的设计与完善，而不至于牵一发而动全身。如果我在设计时规划好了全局状态，那么当Codex和Claude Code在交替推向某个牛角尖时，我就可以及时打断，让他们聚焦到项目全局上来，而不是在一些无关紧要的细节上纠缠不清。</p>
+<p>给我的最大感悟是，不要迷信模型的能力，任何时刻都要最好模块化开发与验证，而不是依赖模型的能力来一口气完成项目。<br>每个模块都要有一个清晰的输入输出以及明确的验收标准。<br>当模型陷入某个牛角尖时，要有一个及时纠正机制，并且不能让在修复某个细小bug的上下文去污染全局上下文。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/blogs/categories/AI/" class="category-chain-item">AI</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/blogs/tags/Agent/" class="print-no-link">#Agent</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>如何设计一个智能体系统</div>
+      <div>https://xjy486.github.io/blogs/2026/05/31/how-to-design-a-agent/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>xujy</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年5月31日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/blogs/2026/05/24/how-to-write-and-publish-blog/" title="如何编写和推送博客">
+                        <span class="hidden-mobile">如何编写和推送博客</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/blogs/js/events.js" ></script>
+<script  src="/blogs/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/blogs/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/blogs/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/blogs/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
